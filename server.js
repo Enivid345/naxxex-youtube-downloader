@@ -98,7 +98,9 @@ app.post("/dl", async (req, res) => {
     res.json({message: "error"})
   }
 });
-
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 app.listen(port, () => {
   console.log("Server is running on port 3000");
 })
