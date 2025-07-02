@@ -107,6 +107,17 @@ app.post("/dl", async (req, res) => {
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
+// Trust the proxy (important for Render and Heroku)
+app.enable('trust proxy');
+
+// Force HTTPS in generated URLs
+app.use((req, res, next) => {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect('https://' + req.headers.host + req.url);
+  }
+  next();
+});
+
 app.listen(port, () => {
   console.log("Server is running on port 3000");
 })
