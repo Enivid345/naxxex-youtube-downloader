@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Downloader</title>
+  <style>
+    :root {
+      --primary: #4a90e2;
+      --primary-hover: #357bd8;
+      --bg-light: #ffffff;
+      --input-bg: #f5f7fa;
+      --border-color: #dbe1e8;
+      --text-dark: #222222;
+      --text-muted: #666666;
+      --shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      transition: all 0.3s ease-in-out;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #c3d9ff, #ffffff);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card {
+      background: var(--bg-light);
+      color: var(--text-dark);
+      padding: 50px 35px;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 90%;
+      max-width: 460px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 160px;
+      height: 160px;
+      background: var(--primary);
+      border-radius: 50%;
+      opacity: 0.1;
+      z-index: 0;
+    }
+
+    .card h1 {
+      font-size: 2rem;
+      margin-bottom: 25px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card input, .card select {
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      background: var(--input-bg);
+      font-size: 1rem;
+      color: var(--text-dark);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card input:focus, .card select:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    }
+
+    .card button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      z-index: 1;
+      position: relative;
+      box-shadow: 0 8px 16px rgba(74, 144, 226, 0.2);
+    }
+
+    .card button:hover {
+      background: var(--primary-hover);
+      transform: scale(1.03);
+    }
+
+    .card button:active {
+      transform: scale(0.98);
+    }
+
+    #status {
+      margin-top: 18px;
+      font-size: 1rem;
+      text-align: center;
+      min-height: 24px;
+      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+    }
+
+    #status a {
+      color: var(--primary);
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    #status a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 40px 25px;
+        border-radius: 16px;
+      }
+      .card h1 {
+        font-size: 1.6rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Naxxex YouTube Downloader</h1>
+    <input type="text" id="url" placeholder="Paste YouTube URL here" />
+    <select id="quality">
+      <option value="best">Best (Auto)</option>
+      <option value="720p">720p</option>
+      <option value="480p">480p</option>
+      <option value="audio">Audio Only (M4A)</option>
+    </select>
+    <button onclick="download()">Download</button>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    function isValidYouTubeUrl(url) {
+      const pattern = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/)[\w-]{11}/;
+      return pattern.test(url.trim());
+    }
+
+    async function download() {
+      const url = document.getElementById("url").value.trim();
+      const quality = document.getElementById("quality").value;
+      const status = document.getElementById("status");
+      const backendUrl = "http://localhost:3000"
+      if (!url) {
+        status.innerText = "⚠️ Please enter a YouTube URL.";
+        return;
+      }
+      let iVURL = isValidYouTubeUrl(url);
+      if (!iVURL) {
+        status.innerText = "⚠️ Invalid YouTube URL.";
+        return;
+      }
+
+      status.innerText = "⏳ Downloading... Please wait.";
+      try {
+        let response = await fetch(backendUrl + "/dl", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            link: url,
+            quality: quality
+          })
+        });
+
+        let result = await response.json();
+        if (result.fullUrl) {
+          try {
+            const link = document.createElement("a");
+            link.href = result.fullUrl;
+            link.setAttribute("download", "");
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+          } catch (e) {
+            status.innerText = "Download Failed....❌";
+            return;
+          }
+          status.innerText = "Download Complete....✅";
+        } else {
+          status.innerText = "Download Failed....❌";
+        }
+      } catch (e) {
+        status.innerText = "Download Failed....❌";
+      }
+    }
+  </script>
+</body>
+</html>
