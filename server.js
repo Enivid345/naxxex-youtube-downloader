@@ -42,8 +42,7 @@ function scheduleFileDeletion(filePath, delayInMs) {
   }, delayInMs);
 }
 
-async function dlVid(fLink, quality) {
-  const link = normalizeYouTubeLink(fLink);
+async function dlVid(link, quality) {
   const randomName = generateRandomString(20);
   const ext = quality === "audio" ? "webm" : "mp4";
   const outputPath = path.join("downloads", `${randomName}.${ext}`);
