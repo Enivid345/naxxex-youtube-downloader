@@ -161,6 +161,7 @@
   </div>
 
   <script>
+    const backendUrl = "https://naxxex-youtube-downloader.onrender.com"
     function isValidYouTubeUrl(url) {
       const pattern = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/(watch\?v=|shorts\/)[\w-]{11}/;
       return pattern.test(url.trim());
@@ -170,7 +171,7 @@
       const url = document.getElementById("url").value.trim();
       const quality = document.getElementById("quality").value;
       const status = document.getElementById("status");
-      const backendUrl = "http://localhost:3000"
+      
       if (!url) {
         status.innerText = "⚠️ Please enter a YouTube URL.";
         return;
