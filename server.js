@@ -16,6 +16,11 @@ if (!fs.existsSync(downloadsPath)) {
   fs.mkdirSync(downloadsPath);
 
 }
+function normalizeYouTubeLink(link) {
+  return link.includes("shorts/")
+    ? link.replace("shorts/", "watch?v=").split("?")[0]
+    : link;
+}
 function generateRandomString(length) {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -37,7 +42,8 @@ function scheduleFileDeletion(filePath, delayInMs) {
   }, delayInMs);
 }
 
-async function dlVid(link, quality) {
+async function dlVid(fLink, quality) {
+  const link = normalizeYouTubeLink(fLink);
   const randomName = generateRandomString(20);
   const ext = quality === "audio" ? "webm" : "mp4";
   const outputPath = path.join("downloads", `${randomName}.${ext}`);
@@ -65,6 +71,7 @@ async function dlVid(link, quality) {
       output: outputPath, // e.g. downloads/abc123.mp4
       mergeOutputFormat: ext, // ensures ffmpeg merges to correct type
       ffmpegLocation: ffmpegPath, // optional: only needed if ffmpeg isn't in PATH
+      cookies: path.join(__dirname, "cookies.txt"),
       verbose: true, // optional: useful for debugging
     });
 
